@@ -32,6 +32,11 @@ class DetailProyekController extends Controller
             return redirect()->route('jelajahi_proyek')->with('error', 'Proyek tidak ditemukan');
         }
 
+        $activeRole = session()->get('active_role', 'Freelancer');
+        if ($proyek->status === 'cancelled' && $activeRole === 'Freelancer') {
+            return redirect()->route('jelajahi_proyek')->with('error', 'Proyek ini telah dibatalkan dan tidak dapat diakses.');
+        }
+
         // Format deadline
         $deadline_formatted = \Carbon\Carbon::parse($proyek->deadline)->translatedFormat('d M Y');
 
@@ -52,13 +57,19 @@ class DetailProyekController extends Controller
         $activeRole = session()->get('active_role', 'Freelancer');
         $view = ($activeRole === 'UMKM' && $cek_umkm) ? 'detail_proyek_umkm' : 'detail_proyek_freelancer';
 
+        // Get jumlah pelamar
+        $jumlah_pelamar = DB::table('project_applicants')
+            ->where('project_id', $project_id)
+            ->count();
+
         return view($view, compact(
             'proyek', 
             'nama_user', 
             'cek_umkm',
             'deadline_formatted',
             'status_label',
-            'status_bg'
+            'status_bg',
+            'jumlah_pelamar'
         ));
     }
 }

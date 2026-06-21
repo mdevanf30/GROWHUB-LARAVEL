@@ -34,8 +34,28 @@ class ProfileController extends Controller
             $freelancer->email_address = $freelancer->email;
         }
 
+        // Ambil daftar proyek selesai dan ratingnya secara dinamis
+        $completedProjects = [];
+        if (session('active_role') === 'UMKM' && $cek_umkm) {
+            $completedProjects = DB::table('project')
+                ->join('project_progress', 'project.project_id', '=', 'project_progress.project_id')
+                ->select('project.project_title', 'project_progress.completed_at', 'project_progress.rating_for_umkm as rating')
+                ->where('project.umkm_id', $cek_umkm->umkm_id)
+                ->where('project.status', 'completed')
+                ->get();
+        } else {
+            $completedProjects = DB::table('project_progress')
+                ->join('project', 'project_progress.project_id', '=', 'project.project_id')
+                ->select('project.project_title', 'project_progress.completed_at', 'project_progress.rating_for_freelancer as rating')
+                ->where('project_progress.freelancer_id', $userId)
+                ->whereNotNull('project_progress.completed_at')
+                ->get();
+        }
+
+        $projectCount = count($completedProjects);
+
         // Tampilkan view profil dengan data lengkap (UMKM + Freelancer)
-        return view('profil', compact('nama_user', 'cek_umkm', 'freelancer'));
+        return view('profil', compact('nama_user', 'cek_umkm', 'freelancer', 'completedProjects', 'projectCount'));
     }
 
     public function edit()

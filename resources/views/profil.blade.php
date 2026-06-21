@@ -123,7 +123,9 @@
                             <div class="flex items-center gap-4 text-xs text-blue-200 mt-2">
                                 <span><i class="fa-solid fa-location-dot mr-1"></i> {{ $freelancer->home_address ?? 'Surabaya' }}</span>
                                 <span><i class="fa-solid fa-envelope mr-1"></i> {{ $freelancer->email_address ?? 'student@email.com' }}</span>
-                                <span class="text-yellow-300"><i class="fa-solid fa-star mr-1"></i> 4.8/5.0</span>
+                                <span class="text-yellow-300"><i class="fa-solid fa-star mr-1"></i> 
+                                    {{ session('active_role') === 'UMKM' ? (number_format($cek_umkm->rating ?? 0.0, 1)) : (number_format($freelancer->rating ?? 0.0, 1)) }}/5.0
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -258,7 +260,7 @@
                         <div class="grid grid-cols-3 gap-2 text-center">
                             <div class="p-3 bg-gray-50 rounded-xl">
                                 <div class="text-gray-400 mb-1"><i class="fa-solid fa-briefcase text-sm"></i></div>
-                                <p class="text-xl font-bold text-gray-900">12</p>
+                                <p class="text-xl font-bold text-gray-900">{{ $projectCount }}</p>
                                 <p class="text-[9px] text-gray-400 uppercase font-medium mt-0.5">Proyek</p>
                             </div>
                             <div class="p-3 bg-gray-50 rounded-xl">
@@ -268,7 +270,9 @@
                             </div>
                             <div class="p-3 bg-gray-50 rounded-xl">
                                 <div class="text-gray-400 mb-1"><i class="fa-solid fa-star text-sm text-yellow-400"></i></div>
-                                <p class="text-xl font-bold text-gray-900">4.8</p>
+                                <p class="text-xl font-bold text-gray-900">
+                                    {{ session('active_role') === 'UMKM' ? (number_format($cek_umkm->rating ?? 0.0, 1)) : (number_format($freelancer->rating ?? 0.0, 1)) }}
+                                </p>
                                 <p class="text-[9px] text-gray-400 uppercase font-medium mt-0.5">Rating</p>
                             </div>
                         </div>
@@ -289,13 +293,29 @@
 
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                     <h3 class="text-sm font-bold text-gray-900">Proyek Selesai</h3>
-                    <div class="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
-                        <div>
-                            <h4 class="text-xs font-bold text-gray-800">Logo Toko Roti Makmur</h4>
-                            <p class="text-[10px] text-gray-400 mt-0.5">Maret 2026</p>
+                    @forelse($completedProjects as $cp)
+                        <div class="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                            <div>
+                                <h4 class="text-xs font-bold text-gray-800">{{ $cp->project_title }}</h4>
+                                <p class="text-[10px] text-gray-400 mt-0.5">
+                                    {{ $cp->completed_at ? \Carbon\Carbon::parse($cp->completed_at)->translatedFormat('F Y') : 'Baru saja selesai' }}
+                                </p>
+                            </div>
+                            <div class="text-xs text-amber-400 flex items-center gap-0.5">
+                                @if($cp->rating)
+                                    @for($i = 1; $i <= 5; $i++)
+                                        <i class="fa-solid fa-star {{ $i <= $cp->rating ? 'text-amber-400' : 'text-gray-200' }}"></i>
+                                    @endfor
+                                @else
+                                    <span class="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Belum Dinilai</span>
+                                @endif
+                            </div>
                         </div>
-                        <div class="text-xs text-yellow-400"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
-                    </div>
+                    @empty
+                        <div class="text-center py-6 text-gray-400 text-xs">
+                            <p>Belum ada proyek yang selesai.</p>
+                        </div>
+                    @endforelse
                 </div>
 
             </div>

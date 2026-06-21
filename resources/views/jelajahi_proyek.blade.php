@@ -110,6 +110,19 @@
         <div class="flex-1 overflow-y-auto p-8 bg-[#f8fafc]">
             <div class="max-w-7xl mx-auto">
                 
+                @if(session('error'))
+                    <div class="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3 shadow-sm">
+                        <i class="fa-solid fa-circle-exclamation text-lg"></i>
+                        <span class="text-sm font-semibold">{{ session('error') }}</span>
+                    </div>
+                @endif
+                @if(session('success'))
+                    <div class="mb-6 p-4 bg-green-50 border border-green-200 text-green-700 rounded-xl flex items-center gap-3 shadow-sm">
+                        <i class="fa-solid fa-circle-check text-lg"></i>
+                        <span class="text-sm font-semibold">{{ session('success') }}</span>
+                    </div>
+                @endif
+
                 <div class="mb-8">
                     <h1 class="text-2xl font-bold text-gray-900">Jelajahi Proyek</h1>
                     <p class="text-gray-500 text-sm mt-1">Temukan proyek yang sesuai dengan keahlian Anda.</p>

@@ -110,7 +110,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <i class="fa-solid fa-users text-gray-400"></i>
-                                    <span>3 pelamar</span>
+                                    <span>{{ $jumlah_pelamar }} pelamar</span>
                                 </div>
                             </div>
                         </div>
@@ -188,7 +188,7 @@
                         <!-- Action Buttons - UMKM View -->
                         <div class="space-y-3">
                             <a href="{{ route('project.applicants', $proyek->project_id) }}" class="w-full py-3 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-2 shadow-sm">
-                                <i class="fa-solid fa-users"></i> Kelola Pelamar (3)
+                                <i class="fa-solid fa-users"></i> Kelola Pelamar ({{ $jumlah_pelamar }})
                             </a>
 
                             <button onclick="openCancelModal()" class="w-full py-3 border-2 border-red-200 text-red-600 text-sm font-bold rounded-xl hover:bg-red-50 transition flex items-center justify-center gap-2">

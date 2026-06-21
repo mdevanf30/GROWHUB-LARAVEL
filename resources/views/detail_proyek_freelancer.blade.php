@@ -91,7 +91,7 @@
                                 </div>
                                 <div class="flex items-center gap-2">
                                     <i class="fa-solid fa-users text-gray-400"></i>
-                                    <span>3 pelamar</span>
+                                    <span>{{ $jumlah_pelamar }} pelamar</span>
                                 </div>
                             </div>
                         </div>

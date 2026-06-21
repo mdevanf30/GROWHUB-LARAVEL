@@ -44,4 +44,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function isAdmin(): bool
+    {
+        $adminEmails = ['admin@growhub.com', 'admin@gmail.com'];
+        return in_array($this->email_address, $adminEmails) || str_ends_with($this->email_address, 'growhubadmin.gmail.com');
+    }
 }

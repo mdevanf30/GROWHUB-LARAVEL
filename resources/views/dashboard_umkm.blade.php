@@ -154,7 +154,12 @@
                         
                         <div class="space-y-3">
                             @forelse($proyek_umkm as $proyek)
-                                <a href="{{ route('project.show', $proyek->project_id) }}" class="flex items-center justify-between p-3.5 border border-gray-100 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all block">
+                                @php
+                                    $targetRoute = $proyek->status === 'completed' 
+                                        ? route('project.payment', $proyek->project_id) 
+                                        : ($proyek->status === 'in_progress' ? route('project.progress', $proyek->project_id) : route('project.show', $proyek->project_id));
+                                @endphp
+                                <a href="{{ $targetRoute }}" class="flex items-center justify-between p-3.5 border border-gray-100 rounded-xl hover:bg-gray-50 hover:border-blue-300 transition-all block">
                                     <div>
                                         <h4 class="text-xs font-bold text-gray-800">{{ $proyek->project_title }}</h4>
                                         <div class="flex items-center gap-3 text-[10px] text-gray-400 mt-1">

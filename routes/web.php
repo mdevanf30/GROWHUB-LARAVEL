@@ -14,10 +14,39 @@ use App\Http\Controllers\DetailProyekController;
 use App\Http\Controllers\ProjectApplicantController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\AdminReportController;
+use App\Http\Controllers\ProjectCancellationController; // <-- FIX 1: SUDAH DI-IMPORT DI SINI!
+use App\Http\Controllers\ProjectProgressController;
 
 Route::get('/home', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.index');
+        }
+
+        $activeRole = session()->get('active_role', 'Freelancer');
+        return $activeRole === 'UMKM' 
+            ? redirect()->route('umkm.dashboard') 
+            : redirect()->route('dashboard_freelance');
+    }
     return view('home');
 })->name('home');
+
+Route::get('/', function () {
+    if (auth()->check()) {
+        $user = auth()->user();
+        if ($user->isAdmin()) {
+            return redirect()->route('admin.index');
+        }
+
+        $activeRole = session()->get('active_role', 'Freelancer');
+        return $activeRole === 'UMKM' 
+            ? redirect()->route('umkm.dashboard') 
+            : redirect()->route('dashboard_freelance');
+    }
+    return redirect()->route('home');
+});
+
 
 // Sesi Registrasi
 Route::get('/daftar_mahasiswa_1', [RegisterAkun::class, 'showRegister'])->name('register');
@@ -33,16 +62,12 @@ Route::get('/dashboard_freelance', [FreelancerDashboard::class, 'index'])
     ->name('dashboard_freelance')
     ->middleware('auth');
 
-//Profil Page
+//Profil Page & Jelajahi Proyek
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profil', [ProfileController::class, 'index'])
-        ->name('profil');
-    Route::get('/freelancer/profile', [ProfileController::class, 'index'])
-        ->name('freelancer.profile');
-    Route::get('/freelancer/edit', [ProfileController::class, 'edit'])
-        ->name('freelancer.edit');
-    Route::put('/freelancer/profile/update', [ProfileController::class, 'update'])
-        ->name('freelancer.update');
+    Route::get('/profil', [ProfileController::class, 'index'])->name('profil');
+    Route::get('/freelancer/profile', [ProfileController::class, 'index'])->name('freelancer.profile');
+    Route::get('/freelancer/edit', [ProfileController::class, 'edit'])->name('freelancer.edit');
+    Route::put('/freelancer/profile/update', [ProfileController::class, 'update'])->name('freelancer.update');
     
     // Switch Role
     Route::get('/switch-role/{role}', function ($role) {
@@ -52,10 +77,8 @@ Route::middleware(['auth'])->group(function () {
         return redirect()->route('profil');
     })->name('switch.role');
     
-Route::middleware(['auth'])->group(function () {
     Route::get('/jelajahi_proyek', [ProjectController::class, 'index'])->name('jelajahi_proyek');
 });
-    });
 
 //Daftar UMKM
 Route::middleware(['auth'])->group(function () {
@@ -67,7 +90,7 @@ Route::middleware(['auth'])->group(function () {
         // Profil / Detail UMKM
         Route::get('/profile', [UmkmProfileController::class, 'index'])->name('profile');
         
-        // Pendaftaran UMKM (Sesuai action form HTML kamu)
+        // Pendaftaran UMKM
         Route::get('/register', [UmkmProfileController::class, 'showRegisterForm'])->name('register');
         Route::post('/register', [UmkmProfileController::class, 'processRegister'])->name('register.process');
         
@@ -77,39 +100,38 @@ Route::middleware(['auth'])->group(function () {
     });
 });
 
-Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
-Route::put('/admin/update/{user_id}', [AdminController::class, 'update'])->name('admin.update');
-Route::delete('/admin/destroy/{user_id}', [AdminController::class, 'destroy'])->name('admin.destroy');
+// Admin Panel Rute
+Route::middleware(['auth', 'admin'])->group(function () {
+    Route::get('/admin', [AdminController::class, 'index'])->name('admin.index');
+    Route::get('/admin/grafik', [AdminController::class, 'indexGrafik'])->name('admin.grafik.index');
+    Route::put('/admin/update/{user_id}', [AdminController::class, 'update'])->name('admin.update');
+    Route::delete('/admin/destroy/{user_id}', [AdminController::class, 'destroy'])->name('admin.destroy');
 
-// Rute Menu UMKM
-Route::get('/admin/umkm', [AdminController::class, 'indexUmkm'])->name('admin.umkm.index');
-Route::put('/admin/umkm/update/{id}', [AdminController::class, 'updateUmkm'])->name('admin.umkm.update');
-Route::delete('/admin/umkm/destroy/{id}', [AdminController::class, 'destroyUmkm'])->name('admin.umkm.destroy');
+    // Rute Menu UMKM
+    Route::get('/admin/umkm', [AdminController::class, 'indexUmkm'])->name('admin.umkm.index');
+    Route::put('/admin/umkm/update/{id}', [AdminController::class, 'updateUmkm'])->name('admin.umkm.update');
+    Route::delete('/admin/umkm/destroy/{id}', [AdminController::class, 'destroyUmkm'])->name('admin.umkm.destroy');
 
-// Rute Menu Project / Proyek
-Route::get('/admin/umkm/proyek', [AdminController::class, 'indexProject'])->name('admin.project.index');
-Route::put('/admin/umkm/proyek/update/{id}', [AdminController::class, 'updateProject'])->name('admin.project.update');
-Route::delete('/admin/umkm/proyek/destroy/{id}', [AdminController::class, 'destroyProject'])->name('admin.project.destroy');
+    // Rute Menu Project / Proyek
+    Route::get('/admin/umkm/proyek', [AdminController::class, 'indexProject'])->name('admin.project.index');
+    Route::put('/admin/umkm/proyek/update/{id}', [AdminController::class, 'updateProject'])->name('admin.project.update');
+    Route::delete('/admin/umkm/proyek/destroy/{id}', [AdminController::class, 'destroyProject'])->name('admin.project.destroy');
 
-// Rute Admin Reports & Cancellations
-Route::get('/admin/reports', [AdminReportController::class, 'reportsList'])->name('admin.reports.list');
-Route::get('/admin/cancellations', [AdminReportController::class, 'cancellationsList'])->name('admin.cancellations.list');
-Route::put('/admin/report/{report_id}/status', [AdminReportController::class, 'updateReportStatus'])->name('admin.report.status');
-Route::put('/admin/cancellation/{cancellation_id}/status', [AdminReportController::class, 'updateCancellationStatus'])->name('admin.cancellation.status');
+    // Rute Admin Reports & Cancellations
+    Route::get('/admin/reports', [AdminReportController::class, 'reportsList'])->name('admin.reports.list');
+    Route::get('/admin/cancellations', [AdminReportController::class, 'cancellationsList'])->name('admin.cancellations.list');
+    Route::put('/admin/report/{report_id}/status', [AdminReportController::class, 'updateReportStatus'])->name('admin.report.status');
+    Route::put('/admin/cancellation/{cancellation_id}/status', [AdminReportController::class, 'updateCancellationStatus'])->name('admin.cancellation.status');
+});
 
-//Rute Buat Proyek
+// Rute Buat Proyek & Detail Proyek
 Route::middleware(['auth'])->group(function () {
     Route::get('/project/create', [BuatProyekController::class, 'create'])->name('project.create');
     Route::post('/project/store', [BuatProyekController::class, 'store'])->name('project.store');
     Route::get('/project/{project_id}', [DetailProyekController::class, 'show'])->name('project.show');
 });
 
-//Rute Dashboard UMKM
-Route::middleware(['auth'])->group(function () {
-    Route::get('/umkm/dashboard', [UMKMDashboardController::class, 'index'])->name('umkm.dashboard');
-});
-
-// Rute Project Applicants (Pelamar Proyek)
+// Rute Project Applicants (Pelamar Proyek) & Actions
 Route::middleware(['auth'])->group(function () {
     // Submit aplikasi pelamar
     Route::post('/project/{project_id}/apply', [ProjectApplicantController::class, 'store'])->name('project.apply');
@@ -126,8 +148,17 @@ Route::middleware(['auth'])->group(function () {
     // Report UMKM/Freelancer
     Route::post('/project/{project_id}/report', [ReportController::class, 'store'])->name('project.report');
     
-    // Cancel Project
+    // Cancel Project (FIX 2: Sekarang controllernya dijamin terbaca!)
     Route::post('/project/{project_id}/cancel', [ProjectCancellationController::class, 'store'])->name('project.cancel');
-});
 
-//Rute Jelajahi Proyek (sudah ada di bagian Profil)
+    // Progress Monitoring
+    Route::get('/project/{project_id}/progress', [ProjectProgressController::class, 'show'])->name('project.progress');
+    Route::post('/project/{project_id}/progress/stage', [ProjectProgressController::class, 'updateStage'])->name('project.progress.stage');
+    Route::post('/project/{project_id}/progress/submit', [ProjectProgressController::class, 'submitWork'])->name('project.progress.submit');
+    Route::post('/project/{project_id}/progress/complete', [ProjectProgressController::class, 'completeProject'])->name('project.progress.complete');
+    
+    // Halaman Pembayaran Proyek
+    Route::get('/project/{project_id}/payment', [ProjectProgressController::class, 'showPayment'])->name('project.payment');
+    Route::post('/project/{project_id}/payment', [ProjectProgressController::class, 'uploadPaymentProof'])->name('project.payment.submit');
+    Route::post('/project/{project_id}/payment/rate', [ProjectProgressController::class, 'submitRating'])->name('project.payment.rate');
+});

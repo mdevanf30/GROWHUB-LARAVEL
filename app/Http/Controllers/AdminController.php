@@ -113,15 +113,21 @@ class AdminController extends Controller
     
         // Mengecek parameter query string (?project_id=) saat tombol edit di tabel diklik
         if ($request->has('project_id')) {
-            $project_select = DB::table('project')->where('project_id', $request->project_id)->first();
+            $project_select = DB::table('project')
+                ->leftJoin('project_progress', 'project.project_id', '=', 'project_progress.project_id')
+                ->select('project.*', 'project_progress.payment_proof', 'project_progress.payment_status')
+                ->where('project.project_id', $request->project_id)
+                ->first();
         }
 
-        $all_projects = DB::table('project')->get();
+        $all_projects = DB::table('project')
+            ->leftJoin('project_progress', 'project.project_id', '=', 'project_progress.project_id')
+            ->select('project.*', 'project_progress.payment_proof', 'project_progress.payment_status')
+            ->get();
     
-        // Kirim variabel $project_select ke file Blade kamu
         return view('admin_umkm_project', compact('all_projects', 'project_select'));
     }
-
+ 
     public function updateProject(Request $request, $id)
     {
         // 1. Sesuaikan validasi HANYA dengan kolom yang ada di form Edit
@@ -131,8 +137,9 @@ class AdminController extends Controller
             'project_budget'  => 'required|numeric',
             'deadline'        => 'required|date',
             'status'          => 'required',
+            'payment_status'  => 'nullable|in:unpaid,pending,approved,rejected',
         ]);
-
+ 
         // 2. Update data di tabel project sesuai dengan input form
         DB::table('project')->where('project_id', $id)->update([
             'project_title'   => $request->project_title,
@@ -143,6 +150,15 @@ class AdminController extends Controller
             'updated_at'      => now(),
         ]);
 
+        if ($request->has('payment_status')) {
+            DB::table('project_progress')
+                ->where('project_id', $id)
+                ->update([
+                    'payment_status' => $request->payment_status,
+                    'updated_at'      => now(),
+                ]);
+        }
+ 
         return redirect()->route('admin.project.index')->with('success', 'Data project berhasil diupdate!');
     }
 
@@ -150,5 +166,56 @@ class AdminController extends Controller
     {
         DB::table('project')->where('project_id', $id)->delete();
         return redirect()->route('admin.project.index')->with('success', 'Project berhasil dihapus!');
+    }
+    
+    //grafik
+    public function indexGrafik()
+    {
+        // 1. Metrik Utama (Stat Cards)
+        $totalUsers = DB::table('users')->count();
+        $activeUsers = DB::table('users')->where('status', 'active')->count();
+        $totalProjects = DB::table('project')->count();
+        $completedProjects = DB::table('project')->where('status', 'completed')->count();
+
+        // 2. Grafik Status Pengguna (Active, Inactive, Banned)
+        $userStatus = DB::table('users')
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->get();
+
+        // 3. Grafik Peran Pengguna (Freelancer vs UMKM)
+        $totalUmkm = DB::table('umkm')->count();
+        $totalFreelancers = DB::table('users')
+            ->leftJoin('umkm', 'users.user_id', '=', 'umkm.user_id')
+            ->whereNull('umkm.user_id')
+            ->count();
+            
+        $userRoles = [
+            ['role' => 'Freelancer', 'total' => $totalFreelancers],
+            ['role' => 'Mitra UMKM', 'total' => $totalUmkm]
+        ];
+
+        // 4. Grafik Status Project
+        $projectStatus = DB::table('project')
+            ->selectRaw('status, COUNT(*) as total')
+            ->groupBy('status')
+            ->get();
+
+        // 5. Grafik Kategori Project
+        $projectCategories = DB::table('project')
+            ->selectRaw('category, COUNT(*) as total')
+            ->groupBy('category')
+            ->get();
+
+        return view('admin.admin_grafik', compact(
+            'totalUsers',
+            'activeUsers',
+            'totalProjects',
+            'completedProjects',
+            'userStatus',
+            'userRoles',
+            'projectStatus',
+            'projectCategories'
+        ));
     }
 }

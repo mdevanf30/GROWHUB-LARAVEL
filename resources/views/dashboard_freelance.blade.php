@@ -108,24 +108,24 @@
                     <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Lamaran Terkirim</p>
-                            <p class="text-2xl font-bold text-gray-900">8</p>
-                            <p class="text-[10px] text-gray-400 mt-1">+2 minggu ini</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $total_applied }}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Total lamaran Anda</p>
                         </div>
                         <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><i class="fa-solid fa-briefcase"></i></div>
                     </div>
                     <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Proyek Aktif</p>
-                            <p class="text-2xl font-bold text-gray-900">2</p>
-                            <p class="text-[10px] text-gray-400 mt-1">1 mendekati deadline</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $total_active }}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Sedang dikerjakan</p>
                         </div>
                         <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><i class="fa-regular fa-clock"></i></div>
                     </div>
                     <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                         <div>
                             <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Proyek Selesai</p>
-                            <p class="text-2xl font-bold text-gray-900">12</p>
-                            <p class="text-[10px] text-gray-400 mt-1">+3 bulan ini</p>
+                            <p class="text-2xl font-bold text-gray-900">{{ $total_completed }}</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Berhasil diselesaikan</p>
                         </div>
                         <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><i class="fa-regular fa-circle-check"></i></div>
                     </div>
@@ -133,9 +133,58 @@
                         <div>
                             <p class="text-[11px] text-gray-400 font-bold uppercase tracking-wider mb-1">Rating</p>
                             <p class="text-2xl font-bold text-gray-900">{{ number_format($user->rating ?? 4.8, 1) }}</p>
-                            <p class="text-[10px] text-gray-400 mt-1">Dari 10 ulasan</p>
+                            <p class="text-[10px] text-gray-400 mt-1">Berdasarkan ulasan</p>
                         </div>
                         <div class="w-10 h-10 bg-blue-50 text-blue-500 rounded-lg flex items-center justify-center"><i class="fa-regular fa-star"></i></div>
+                    </div>
+                </div>
+
+                <!-- Proyek Aktif Anda Section -->
+                <div class="mb-10">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-bold text-gray-900">Proyek Aktif Anda</h3>
+                        <p class="text-gray-500 text-xs mt-0.5">Kelola dan pantau progress pengerjaan proyek aktif Anda di sini.</p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        @forelse($active_projects as $proyek)
+                            @php
+                                $targetRoute = $proyek->status === 'completed'
+                                    ? route('project.payment', $proyek->project_id)
+                                    : route('project.progress', $proyek->project_id);
+                            @endphp
+                            <a href="{{ $targetRoute }}" class="bg-white p-6 rounded-2xl border {{ $proyek->status === 'completed' ? 'border-green-200/60 hover:border-green-400' : 'border-amber-200/60 hover:border-amber-400' }} shadow-sm hover:shadow-md transition-all duration-200 block">
+                                <div class="flex justify-between items-start mb-3">
+                                    <div>
+                                        <h4 class="font-bold text-gray-900 leading-tight">{{ $proyek->project_title }}</h4>
+                                        <p class="text-xs text-gray-400 mt-1">{{ $proyek->business_name }}</p>
+                                    </div>
+                                    @if($proyek->status === 'completed')
+                                        <span class="px-2.5 py-1 bg-green-50 text-green-600 text-[9px] font-bold rounded uppercase tracking-wide">
+                                            Selesai
+                                        </span>
+                                    @else
+                                        <span class="px-2.5 py-1 bg-amber-50 text-amber-600 text-[9px] font-bold rounded uppercase tracking-wide">
+                                            {{ $proyek->current_stage }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-50 text-xs">
+                                    <div>
+                                        <p class="text-[10px] text-gray-400 leading-none">Anggaran</p>
+                                        <p class="font-bold text-[#0b51b7] mt-1.5">Rp {{ number_format($proyek->project_budget, 0, ',', '.') }}</p>
+                                    </div>
+                                    <span class="text-blue-600 font-bold text-[11px] flex items-center gap-1">
+                                        {{ $proyek->status === 'completed' ? 'Buka Pembayaran' : 'Buka Monitoring' }} <i class="fa-solid fa-arrow-right"></i>
+                                    </span>
+                                </div>
+                            </a>
+                        @empty
+                            <div class="col-span-full bg-white p-8 text-center text-gray-500 rounded-2xl border border-gray-100 shadow-sm">
+                                <i class="fa-solid fa-clock-rotate-left text-3xl text-gray-300 mb-2 block"></i>
+                                Anda belum memiliki proyek aktif yang sedang dikerjakan.
+                            </div>
+                        @endforelse
                     </div>
                 </div>
 

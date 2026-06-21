@@ -25,6 +25,13 @@ class ProjectApplicantController extends Controller
         // Cek proyek ada atau tidak
         $project = Project::findOrFail($project_id);
 
+        if ($project->status === 'cancelled') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak dapat melamar pada proyek yang sudah dibatalkan'
+            ], 403);
+        }
+
         // Cek apakah freelancer sudah apply ke proyek ini
         $existingApplication = ProjectApplicant::where('project_id', $project_id)
             ->where('user_id', Auth::id())
@@ -116,11 +123,22 @@ class ProjectApplicantController extends Controller
                 'decided_at' => now(),
             ]);
 
+            // Update status project menjadi in_progress
+            $project = $application->project;
+            $project->update(['status' => 'in_progress']);
+
             // Optional: Reject aplikasi lain untuk proyek yang sama
             ProjectApplicant::where('project_id', $application->project_id)
                 ->where('application_id', '!=', $application_id)
                 ->where('status', 'pending')
                 ->update(['status' => 'rejected', 'decided_at' => now()]);
+
+            // Buat record progress proyek
+            \App\Models\ProjectProgress::create([
+                'project_id' => $project->project_id,
+                'freelancer_id' => $application->user_id,
+                'current_stage' => 'planning',
+            ]);
 
             return response()->json([
                 'success' => true,
