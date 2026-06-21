@@ -87,6 +87,9 @@
                             <option value="Desain logo">Desain Logo</option>
                             <option value="Konten media sosial">Konten Media Sosial</option>
                             <option value="Desain kemasan">Desain Kemasan</option>
+                            <option value="Website">Website</option>
+                            <option value="Desain Poster">Desain Poster</option>
+                            <option value="Lainnya">Lainnya</option>
                         </select>
                     </div>
 

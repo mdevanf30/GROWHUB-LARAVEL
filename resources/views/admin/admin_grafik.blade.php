@@ -34,6 +34,8 @@
                     <a href="{{ route('admin.index') }}" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">Menu User</a>
                     <a href="{{ route('admin.umkm.index') }}" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">Menu UMKM</a>
                     <a href="{{ route('admin.project.index') }}" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">Menu Project</a>
+                    <a href="{{ route('admin.reports.list') }}" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">Menu Laporan</a>
+                    <a href="{{ route('admin.cancellations.list') }}" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">Menu Pembatalan</a>
                     <span class="px-3 py-1.5 rounded-lg bg-primary text-white shadow-md shadow-blue-800/20">Data Grafik</span>
                 </div>
             </div>
