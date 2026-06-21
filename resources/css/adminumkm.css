@@ -1,0 +1,131 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-color: #f4f6f9;
+}
+
+h1 {
+  text-align: center;
+  background-color: #0D47A1;
+  color: white;
+  padding: 20px;
+  margin: 0;
+}
+
+h2 {
+  color: #0D47A1;
+  margin-top: 30px;
+}
+
+body {
+  padding: 20px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  background: white;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+table th {
+  background-color: #0D47A1;
+  color: white;
+  padding: 12px;
+  text-align: left;
+}
+
+table td {
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+}
+
+table tr:hover {
+  background-color: #f1f1f1;
+}
+
+a {
+  text-decoration: none;
+  font-size: 13px;
+}
+
+a[href*="project_id"] {
+  background-color: #1976D2;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+a[href*="delete_project_id"] {
+  background-color: #d32f2f;
+  color: white;
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+a:hover {
+  opacity: 0.8;
+}
+
+form {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin-top: 20px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+label {
+  font-weight: bold;
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 10px;
+  margin-top: 5px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+textarea {
+  resize: vertical;
+}
+
+.btn-primary {
+  display: inline-block;
+  background-color: #0D47A1;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+  button:hover {
+    background-color: #08306b;
+  }
+
+.top-button {
+  margin-bottom: 20px;
+}
+
+.btn-primary {
+  display: inline-block;
+  background-color: #0D47A1;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.btn-primary:hover {
+  background-color: #08306b;
+}
