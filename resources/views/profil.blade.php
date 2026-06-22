@@ -112,7 +112,6 @@
                         </div>
                         <div>
                             <h2 class="text-xl font-bold">{{ $nama_user }}</h2>
-                            <p class="text-sm text-blue-100 mt-0.5">Mahasiswa - Sistem Informasi</p>
                             
                             @if(session('active_role') === 'UMKM' && isset($cek_umkm))
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white/20 text-xs font-medium mt-1">
