@@ -123,6 +123,16 @@ class AdminController extends Controller
         $all_projects = DB::table('project')
             ->leftJoin('project_progress', 'project.project_id', '=', 'project_progress.project_id')
             ->select('project.*', 'project_progress.payment_proof', 'project_progress.payment_status')
+            ->orderByRaw("
+                CASE 
+                    WHEN project_progress.payment_status = 'pending' THEN 1
+                    WHEN project.status = 'completed' THEN 2
+                    WHEN project.status = 'in_progress' THEN 3
+                    WHEN project.status = 'open' THEN 4
+                    WHEN project.status = 'cancelled' THEN 5
+                    ELSE 6
+                END ASC
+            ")
             ->get();
     
         return view('admin_umkm_project', compact('all_projects', 'project_select'));

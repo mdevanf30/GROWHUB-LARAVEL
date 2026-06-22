@@ -141,33 +141,37 @@
 
                 <!-- Proyek Aktif Anda Section -->
                 <div class="mb-10">
-                    <div class="mb-4">
-                        <h3 class="text-lg font-bold text-gray-900">Proyek Aktif Anda</h3>
-                        <p class="text-gray-500 text-xs mt-0.5">Kelola dan pantau progress pengerjaan proyek aktif Anda di sini.</p>
+                    <div class="mb-4 flex justify-between items-center">
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-900">Proyek Aktif Anda</h3>
+                            <p class="text-gray-500 text-xs mt-0.5">Kelola dan pantau progress pengerjaan proyek aktif Anda di sini.</p>
+                        </div>
+                        @if($total_active > 2)
+                        <a href="{{ route('freelancer.active-projects') }}" class="text-sm font-semibold text-[#0b51b7] hover:underline flex items-center gap-1">
+                            Lihat Semua <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </a>
+                        @endif
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="active-projects-container">
                         @forelse($active_projects as $proyek)
                             @php
-                                $targetRoute = $proyek->status === 'completed'
-                                    ? route('project.payment', $proyek->project_id)
-                                    : route('project.progress', $proyek->project_id);
+                                $targetRoute = route('project.progress', $proyek->project_id);
                             @endphp
-                            <a href="{{ $targetRoute }}" class="bg-white p-6 rounded-2xl border {{ $proyek->status === 'completed' ? 'border-green-200/60 hover:border-green-400' : 'border-amber-200/60 hover:border-amber-400' }} shadow-sm hover:shadow-md transition-all duration-200 block">
+                            <a href="{{ $targetRoute }}" class="active-project-card bg-white p-6 rounded-2xl border border-amber-200/60 hover:border-amber-400 shadow-sm hover:shadow-md transition-all duration-200 block">
                                 <div class="flex justify-between items-start mb-3">
                                     <div>
                                         <h4 class="font-bold text-gray-900 leading-tight">{{ $proyek->project_title }}</h4>
                                         <p class="text-xs text-gray-400 mt-1">{{ $proyek->business_name }}</p>
                                     </div>
-                                    @if($proyek->status === 'completed')
-                                        <span class="px-2.5 py-1 bg-green-50 text-green-600 text-[9px] font-bold rounded uppercase tracking-wide">
-                                            Selesai
-                                        </span>
-                                    @else
+                                    <div class="flex flex-col items-end gap-1.5">
                                         <span class="px-2.5 py-1 bg-amber-50 text-amber-600 text-[9px] font-bold rounded uppercase tracking-wide">
                                             {{ $proyek->current_stage }}
                                         </span>
-                                    @endif
+                                        <span id="countdown-{{ $proyek->project_id }}" class="px-2.5 py-1 bg-red-50 text-red-600 text-[9px] font-semibold rounded tracking-wide font-mono whitespace-nowrap" data-deadline="{{ $proyek->deadline }}">
+                                            Loading...
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="flex justify-between items-center mt-6 pt-4 border-t border-gray-50 text-xs">
                                     <div>
@@ -175,7 +179,7 @@
                                         <p class="font-bold text-[#0b51b7] mt-1.5">Rp {{ number_format($proyek->project_budget, 0, ',', '.') }}</p>
                                     </div>
                                     <span class="text-blue-600 font-bold text-[11px] flex items-center gap-1">
-                                        {{ $proyek->status === 'completed' ? 'Buka Pembayaran' : 'Buka Monitoring' }} <i class="fa-solid fa-arrow-right"></i>
+                                        Buka Monitoring <i class="fa-solid fa-arrow-right"></i>
                                     </span>
                                 </div>
                             </a>
@@ -189,8 +193,13 @@
                 </div>
 
                 <div class="mb-6 flex justify-between items-center">
-                    <h3 class="text-lg font-bold text-gray-900">Proyek Terbaru</h3>
-                    <a href="#" class="text-sm font-semibold text-[#0b51b7] hover:underline">Lihat Semua <i class="fa-solid fa-arrow-right ml-1"></i></a>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Proyek Terbaru</h3>
+                        <p class="text-gray-500 text-xs mt-0.5">Proyek baru yang dibuka oleh UMKM</p>
+                    </div>
+                    <a href="{{ route('jelajahi_proyek') }}" class="text-sm font-semibold text-[#0b51b7] hover:underline flex items-center gap-1">
+                        Lihat Semua <i class="fa-solid fa-arrow-right text-xs"></i>
+                    </a>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -220,5 +229,37 @@
         </div>
     </main>
 
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Real-time Countdown Timer for Deadlines
+            function updateCountdowns() {
+                const countdownElements = document.querySelectorAll("[data-deadline]");
+                countdownElements.forEach(function(el) {
+                    const deadlineStr = el.getAttribute("data-deadline");
+                    // Set target time to the end of the deadline day (23:59:59)
+                    const targetDate = new Date(deadlineStr + "T23:59:59").getTime();
+                    const now = new Date().getTime();
+                    const difference = targetDate - now;
+
+                    if (difference < 0) {
+                        el.innerText = "Waktu Habis";
+                        el.classList.remove("bg-red-50", "text-red-600");
+                        el.classList.add("bg-gray-100", "text-gray-500");
+                        return;
+                    }
+
+                    const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+                    const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+                    el.innerText = `${days}h ${hours}j ${minutes}m ${seconds}s`;
+                });
+            }
+
+            updateCountdowns();
+            setInterval(updateCountdowns, 1000);
+        });
+    </script>
 </body>
 </html>

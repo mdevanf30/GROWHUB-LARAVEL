@@ -127,13 +127,15 @@
                                     <!-- Left Side - Freelancer Info -->
                                     <div class="flex items-start gap-4 flex-1">
                                         <!-- Avatar -->
-                                        <div class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0">
+                                        <a href="{{ route('profil', $applicant->freelancer->user_id) }}" class="w-16 h-16 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold text-lg flex-shrink-0 hover:bg-blue-700 transition cursor-pointer" title="Lihat profil {{ $applicant->freelancer->full_name }}">
                                             {{ strtoupper(substr($applicant->freelancer->full_name, 0, 1)) }}
-                                        </div>
+                                        </a>
 
                                         <!-- Info -->
                                         <div class="flex-1 pt-1">
-                                            <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $applicant->freelancer->full_name }}</h3>
+                                            <a href="{{ route('profil', $applicant->freelancer->user_id) }}" class="hover:underline hover:text-blue-600 transition" title="Lihat profil {{ $applicant->freelancer->full_name }}">
+                                                <h3 class="text-lg font-bold text-gray-900 mb-1">{{ $applicant->freelancer->full_name }}</h3>
+                                            </a>
                                             <div class="flex items-center gap-6 mb-3">
                                                 <div class="flex items-center gap-2 text-sm text-gray-600">
                                                     <i class="fa-solid fa-star text-yellow-400"></i>

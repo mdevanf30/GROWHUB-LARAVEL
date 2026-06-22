@@ -27,6 +27,10 @@
                     <a href="{{ route('admin.reports.list') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Menu Laporan</a>
                     <a href="{{ route('admin.cancellations.list') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition">Menu Pembatalan</a>
                     <a href="{{ route('admin.grafik.index') }}" class="px-4 py-2 rounded-lg text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition font-semibold">Data Grafik</a>
+                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="px-4 py-2 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition">Keluar</a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
                 </div>
             </div>
         </div>
@@ -74,7 +78,9 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="p-4">
                                     <div class="font-semibold text-gray-900">{{ $p->project_title }}</div>
-                                    <div class="text-xs text-gray-400">{{ $p->category }}</div>
+                                </td>
+                                <td class="p-4 text-xs text-gray-600">
+                                    {{ $p->category }}
                                 </td>
                                 <td class="p-4 font-mono font-medium text-emerald-600">Rp {{ number_format($p->project_budget, 0, ',', '.') }}</td>
                                 <td class="p-4 text-gray-500 font-mono text-xs">{{ $p->deadline }}</td>

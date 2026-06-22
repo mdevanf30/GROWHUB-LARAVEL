@@ -139,7 +139,7 @@ class ProjectProgressController extends Controller
             $progress = ProjectProgress::where('project_id', $project_id)->firstOrFail();
 
             // Authorization check (only assigned freelancer)
-            if ($progress->freelancer_id !== Auth::id()) {
+            if ($progress->freelancer_id !== Auth::user()->user_id) {
                 return response()->json(['success' => false, 'message' => 'Hanya freelancer terpilih yang dapat memperbarui tahapan progress.'], 403);
             }
 
@@ -171,7 +171,7 @@ class ProjectProgressController extends Controller
             $progress = ProjectProgress::where('project_id', $project_id)->firstOrFail();
 
             // Authorization check (only freelancer assigned)
-            if ($progress->freelancer_id !== Auth::id()) {
+            if ($progress->freelancer_id !== Auth::user()->user_id) {
                 return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai freelancer pada proyek ini.');
             }
 
@@ -189,7 +189,7 @@ class ProjectProgressController extends Controller
                 }
 
                 $file = $request->file('project_file');
-                $filename = 'work_' . Auth::id() . '_' . $project_id . '_' . time() . '.' . $file->getClientOriginalExtension();
+                $filename = 'work_' . Auth::user()->user_id . '' . $project_id . '' . time() . '.' . $file->getClientOriginalExtension();
                 $path = $file->storeAs('project_files', $filename, 'public');
                 $updateData['project_file'] = $path;
             }
@@ -210,7 +210,7 @@ class ProjectProgressController extends Controller
             $progress = ProjectProgress::where('project_id', $project_id)->firstOrFail();
 
             // Authorization check (only project owner UMKM)
-            $cek_umkm = DB::table('umkm')->where('user_id', Auth::id())->first();
+            $cek_umkm = DB::table('umkm')->where('user_id', Auth::user()->user_id)->first();
             if (!$cek_umkm || $project->umkm_id !== $cek_umkm->umkm_id) {
                 return redirect()->back()->with('error', 'Hanya mitra UMKM pemilik proyek yang dapat menandai proyek selesai.');
             }
@@ -249,7 +249,7 @@ class ProjectProgressController extends Controller
             $progress = ProjectProgress::where('project_id', $project_id)->firstOrFail();
 
             // Authorization check (only project owner UMKM)
-            $cek_umkm = DB::table('umkm')->where('user_id', Auth::id())->first();
+            $cek_umkm = DB::table('umkm')->where('user_id', Auth::user()->user_id)->first();
             if (!$cek_umkm || $project->umkm_id !== $cek_umkm->umkm_id) {
                 return redirect()->back()->with('error', 'Hanya mitra UMKM pemilik proyek yang dapat mengunggah bukti pembayaran.');
             }
@@ -363,7 +363,7 @@ class ProjectProgressController extends Controller
 
             if ($activeRole === 'UMKM') {
                 // UMKM memberikan rating kepada Freelancer
-                $cek_umkm = DB::table('umkm')->where('user_id', Auth::id())->first();
+                $cek_umkm = DB::table('umkm')->where('user_id', Auth::user()->user_id)->first();
                 if (!$cek_umkm || $project->umkm_id !== $cek_umkm->umkm_id) {
                     return redirect()->back()->with('error', 'Hanya mitra UMKM pemilik proyek yang dapat memberikan rating.');
                 }
@@ -395,7 +395,7 @@ class ProjectProgressController extends Controller
 
             } else {
                 // Freelancer memberikan rating kepada UMKM
-                if ($progress->freelancer_id !== Auth::id()) {
+                if ($progress->freelancer_id !== Auth::user()->user_id) {
                     return redirect()->back()->with('error', 'Hanya freelancer terpilih yang dapat memberikan rating.');
                 }
 
@@ -431,5 +431,52 @@ class ProjectProgressController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Tampilkan hasil proyek yang telah dikerjakan (link dan file)
+     */
+    public function showResults($project_id)
+    {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
+        $user = Auth::user();
+        $userId = $user->user_id;
+
+        // Fetch project and joined UMKM details
+        $proyek = DB::table('project')
+            ->leftJoin('umkm', 'project.umkm_id', '=', 'umkm.umkm_id')
+            ->select('project.*', 'umkm.business_name', 'umkm.phone_number as umkm_phone', 'umkm.user_id as umkm_user_id')
+            ->where('project.project_id', $project_id)
+            ->first();
+
+        if (!$proyek) {
+            return redirect()->back()->with('error', 'Proyek tidak ditemukan.');
+        }
+
+        // Fetch project progress
+        $progress = ProjectProgress::where('project_id', $project_id)->first();
+        if (!$progress) {
+            return redirect()->back()->with('error', 'Progress proyek tidak ditemukan.');
+        }
+
+        // Authorization check: only the assigned freelancer or the project owner UMKM can see this
+        $activeRole = session()->get('active_role', 'Freelancer');
+        if ($activeRole === 'UMKM') {
+            $cek_umkm = DB::table('umkm')->where('user_id', $userId)->first();
+            if (!$cek_umkm || $proyek->umkm_id !== $cek_umkm->umkm_id) {
+                return redirect()->back()->with('error', 'Anda tidak memiliki hak akses ke hasil proyek ini.');
+            }
+        } else {
+            if ($progress->freelancer_id !== $userId) {
+                return redirect()->back()->with('error', 'Anda tidak terdaftar sebagai freelancer pada proyek ini.');
+            }
+        }
+
+        $nama_user = $user->full_name ?? $user->name ?? 'User';
+
+        return view('project_results', compact('proyek', 'progress', 'nama_user', 'activeRole'));
     }
 }

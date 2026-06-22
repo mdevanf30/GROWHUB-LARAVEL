@@ -19,21 +19,24 @@ class FreelancerDashboard extends Controller
         $total_active = DB::table('project_progress')->where('freelancer_id', $userId)->whereNull('completed_at')->count();
         $total_completed = DB::table('project_progress')->where('freelancer_id', $userId)->whereNotNull('completed_at')->count();
 
-        // 3. Ambil proyek aktif & selesai yang dikerjakan oleh freelancer ini
+        // 3. Ambil proyek aktif yang sedang dikerjakan oleh freelancer ini (belum selesai, limit 2)
         $active_projects = DB::table('project_progress')
             ->join('project', 'project_progress.project_id', '=', 'project.project_id')
             ->join('umkm', 'project.umkm_id', '=', 'umkm.umkm_id')
             ->select('project.*', 'umkm.business_name', 'project_progress.current_stage')
             ->where('project_progress.freelancer_id', $userId)
+            ->whereNull('project_progress.completed_at')
+            ->orderBy('project.deadline', 'asc')
+            ->limit(2)
             ->get();
 
-        // 4. Ambil 4 proyek terbaru dari DB (yang statusnya open)
+        // 4. Ambil 2 proyek terbaru dari DB (yang statusnya open)
         $projects = DB::table('project')
                         ->join('umkm', 'project.umkm_id', '=', 'umkm.umkm_id')
                         ->select('project.*', 'umkm.business_name')
                         ->where('project.status', 'open')
                         ->orderBy('project.project_id', 'desc')
-                        ->limit(4)
+                        ->limit(2)
                         ->get();
 
         // 5. Oper data ke file view dashboard_freelancer.blade.php
@@ -45,5 +48,23 @@ class FreelancerDashboard extends Controller
             'total_completed',
             'active_projects'
         ));
+    }
+
+    public function activeProjects()
+    {
+        $user = Auth::user(); 
+        $userId = $user->user_id;
+
+        // Ambil semua proyek aktif (tidak dibatasi limit)
+        $active_projects = DB::table('project_progress')
+            ->join('project', 'project_progress.project_id', '=', 'project.project_id')
+            ->join('umkm', 'project.umkm_id', '=', 'umkm.umkm_id')
+            ->select('project.*', 'umkm.business_name', 'project_progress.current_stage')
+            ->where('project_progress.freelancer_id', $userId)
+            ->whereNull('project_progress.completed_at')
+            ->orderBy('project.deadline', 'asc')
+            ->get();
+
+        return view('active_projects', compact('user', 'active_projects'));
     }
 }

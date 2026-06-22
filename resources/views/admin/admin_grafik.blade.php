@@ -37,6 +37,10 @@
                     <a href="{{ route('admin.reports.list') }}" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">Menu Laporan</a>
                     <a href="{{ route('admin.cancellations.list') }}" class="px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-100 transition">Menu Pembatalan</a>
                     <span class="px-3 py-1.5 rounded-lg bg-primary text-white shadow-md shadow-blue-800/20">Data Grafik</span>
+                    <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="px-3 py-1.5 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 transition">Keluar</a>
+                    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="hidden">
+                        @csrf
+                    </form>
                 </div>
             </div>
         </div>

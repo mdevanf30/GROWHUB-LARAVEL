@@ -90,13 +90,13 @@
                             <p class="text-[10px] text-gray-400">Publikasikan kebutuhan baru</p>
                         </div>
                     </a>
-                    <div class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4 hover:border-blue-500/30 transition-all cursor-pointer">
-                        <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-[#0d47a1]"><i class="fa-solid fa-arrow-trend-up text-sm"></i></div>
+                    <a href="{{ route('umkm.search-freelancer') }}" class="bg-white p-4 rounded-xl border border-gray-100 shadow-sm flex items-center gap-4 hover:border-blue-500/30 transition-all cursor-pointer">
+                        <div class="w-10 h-10 bg-blue-50 rounded-lg flex items-center justify-center text-[#0d47a1]"><i class="fa-solid fa-user-gear text-sm"></i></div>
                         <div>
-                            <h3 class="text-xs font-bold text-gray-800">Lihat Proyek</h3>
-                            <p class="text-[10px] text-gray-400">Kelola proyek Anda</p>
+                            <h3 class="text-xs font-bold text-gray-800">Cari Freelancer</h3>
+                            <p class="text-[10px] text-gray-400">Temukan talenta terbaik untuk proyek Anda</p>
                         </div>
-                    </div>
+                    </a>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

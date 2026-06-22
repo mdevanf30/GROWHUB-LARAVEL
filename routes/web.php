@@ -55,16 +55,19 @@ Route::post('/daftar_mahasiswa_1', [RegisterAkun::class, 'register'])->name('reg
 // Sesi Login
 Route::get('/login', [Login::class, 'showLogin'])->name('login');
 Route::post('/login', [Login::class, 'login'])->name('login.post');
-Route::post('/logout', [Login::class, 'logout'])->name('logout');
+Route::match(['get', 'post'], '/logout', [Login::class, 'logout'])->name('logout');
 
 //Dashboard Freelancer
 Route::get('/dashboard_freelance', [FreelancerDashboard::class, 'index'])
     ->name('dashboard_freelance')
     ->middleware('auth');
+Route::get('/freelancer/active-projects', [FreelancerDashboard::class, 'activeProjects'])
+    ->name('freelancer.active-projects')
+    ->middleware('auth');
 
 //Profil Page & Jelajahi Proyek
 Route::middleware(['auth'])->group(function () {
-    Route::get('/profil', [ProfileController::class, 'index'])->name('profil');
+    Route::get('/profil/{id?}', [ProfileController::class, 'index'])->name('profil');
     Route::get('/freelancer/profile', [ProfileController::class, 'index'])->name('freelancer.profile');
     Route::get('/freelancer/edit', [ProfileController::class, 'edit'])->name('freelancer.edit');
     Route::put('/freelancer/profile/update', [ProfileController::class, 'update'])->name('freelancer.update');
@@ -86,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('umkm')->name('umkm.')->group(function () {
         // Dashboard UMKM
         Route::get('/dashboard', [UMKMDashboardController::class, 'index'])->name('dashboard');
+        Route::get('/search-freelancer', [UMKMDashboardController::class, 'searchFreelancers'])->name('search-freelancer');
         
         // Profil / Detail UMKM
         Route::get('/profile', [UmkmProfileController::class, 'index'])->name('profile');
@@ -161,4 +165,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/project/{project_id}/payment', [ProjectProgressController::class, 'showPayment'])->name('project.payment');
     Route::post('/project/{project_id}/payment', [ProjectProgressController::class, 'uploadPaymentProof'])->name('project.payment.submit');
     Route::post('/project/{project_id}/payment/rate', [ProjectProgressController::class, 'submitRating'])->name('project.payment.rate');
+
+    Route::get('/freelancer/completed-projects/{id?}', [ProfileController::class, 'completedProjects'])->name('freelancer.completed_projects');
+    Route::get('/project/{project_id}/results', [ProjectProgressController::class, 'showResults'])->name('project.results');
 });

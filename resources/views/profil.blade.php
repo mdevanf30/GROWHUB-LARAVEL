@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GrowHub - Profil {{ session('active_role') ?? 'Freelancer' }}</title>
+    <title>GrowHub - Profil {{ $display_role ?? 'Freelancer' }}</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght=400;500;600;700&display=swap" rel="stylesheet">
@@ -34,7 +34,7 @@
                             {{ session('active_role') === 'UMKM' ? 'UMKM' : 'ROLE' }}
                         </p>
                         <p class="font-semibold text-sm leading-none">
-                            {{ session('active_role') === 'UMKM' ? ($cek_umkm->business_name ?? 'Mitra UMKM') : 'Freelancer' }}
+                            {{ session('active_role') === 'UMKM' ? ($login_umkm->business_name ?? 'Mitra UMKM') : 'Freelancer' }}
                         </p>
                     </div>
                 </div>
@@ -108,12 +108,12 @@
                 <div class="bg-[#0b51b7] text-white p-6 rounded-2xl flex items-center justify-between relative shadow-sm">
                     <div class="flex items-center gap-4">
                         <div class="w-16 h-16 rounded-xl bg-white text-[#0b51b7] flex items-center justify-center text-2xl font-bold">
-                            {{ strtoupper(substr($nama_user, 0, 1)) }}
+                            {{ strtoupper(substr($profile_name, 0, 1)) }}
                         </div>
                         <div>
-                            <h2 class="text-xl font-bold">{{ $nama_user }}</h2>
+                            <h2 class="text-xl font-bold">{{ $profile_name }}</h2>
                             
-                            @if(session('active_role') === 'UMKM' && isset($cek_umkm))
+                            @if($display_role === 'UMKM' && isset($cek_umkm) && $cek_umkm)
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-white/20 text-xs font-medium mt-1">
                                     <i class="fa-solid fa-store text-[10px]"></i> {{ $cek_umkm->business_name }}
                                 </span>
@@ -123,18 +123,20 @@
                                 <span><i class="fa-solid fa-location-dot mr-1"></i> {{ $freelancer->home_address ?? 'Surabaya' }}</span>
                                 <span><i class="fa-solid fa-envelope mr-1"></i> {{ $freelancer->email_address ?? 'student@email.com' }}</span>
                                 <span class="text-yellow-300"><i class="fa-solid fa-star mr-1"></i> 
-                                    {{ session('active_role') === 'UMKM' ? (number_format($cek_umkm->rating ?? 0.0, 1)) : (number_format($freelancer->rating ?? 0.0, 1)) }}/5.0
+                                    {{ $display_role === 'UMKM' ? (number_format($cek_umkm->rating ?? 0.0, 1)) : (number_format($freelancer->rating ?? 0.0, 1)) }}/5.0
                                 </span>
                             </div>
                         </div>
                     </div>
                     
+                    @if($is_own_profile)
                     <a href="{{ route('freelancer.edit') }}" class="absolute top-6 right-6 px-4 py-1.5 bg-white/20 hover:bg-white/30 text-white text-xs font-semibold rounded-lg border border-white/30 flex items-center gap-1.5 transition-colors">
                         <i class="fa-regular fa-pen-to-square"></i> Edit
                     </a>
+                    @endif
                 </div>
 
-                @if(isset($cek_umkm) && $cek_umkm)
+                @if($is_own_profile && isset($cek_umkm) && $cek_umkm)
                 <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <h3 class="text-sm font-bold text-gray-900">Mode Profil</h3>
@@ -154,7 +156,7 @@
                 </div>
                 @endif
 
-                @if(session('active_role') === 'UMKM' && isset($cek_umkm))
+                @if($display_role === 'UMKM' && isset($cek_umkm) && $cek_umkm)
                     <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
                         <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2">
                             <i class="fa-solid fa-store text-[#0b51b7]"></i> Info UMKM
@@ -197,7 +199,7 @@
                     </div>
                 @endif
 
-                @if(!isset($cek_umkm) || !$cek_umkm)
+                @if($is_own_profile && (!isset($cek_umkm) || !$cek_umkm))
                     <div class="bg-gradient-to-r from-[#1e40af] to-[#0b51b7] text-white p-6 rounded-2xl shadow-sm border border-blue-700">
                         <div class="flex items-start gap-4">
                             <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fa-solid fa-store"></i></div>
@@ -270,7 +272,7 @@
                             <div class="p-3 bg-gray-50 rounded-xl">
                                 <div class="text-gray-400 mb-1"><i class="fa-solid fa-star text-sm text-yellow-400"></i></div>
                                 <p class="text-xl font-bold text-gray-900">
-                                    {{ session('active_role') === 'UMKM' ? (number_format($cek_umkm->rating ?? 0.0, 1)) : (number_format($freelancer->rating ?? 0.0, 1)) }}
+                                    {{ $display_role === 'UMKM' ? (number_format($cek_umkm->rating ?? 0.0, 1)) : (number_format($freelancer->rating ?? 0.0, 1)) }}
                                 </p>
                                 <p class="text-[9px] text-gray-400 uppercase font-medium mt-0.5">Rating</p>
                             </div>
@@ -290,32 +292,43 @@
                     </div>
                 </div>
 
+                @if($display_role !== 'UMKM')
                 <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm space-y-4">
-                    <h3 class="text-sm font-bold text-gray-900">Proyek Selesai</h3>
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-sm font-bold text-gray-900">Riwayat Proyek</h3>
+                        @if($totalCompletedCount > 3)
+                            <a href="{{ route('freelancer.completed_projects', $freelancer->user_id) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700 transition">Lihat Selengkapnya</a>
+                        @endif
+                    </div>
                     @forelse($completedProjects as $cp)
-                        <div class="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
+                        <a href="{{ route('project.results', $cp->project_id) }}" class="flex items-center justify-between p-3 border border-gray-100 rounded-xl hover:bg-gray-50 transition-colors">
                             <div>
                                 <h4 class="text-xs font-bold text-gray-800">{{ $cp->project_title }}</h4>
                                 <p class="text-[10px] text-gray-400 mt-0.5">
                                     {{ $cp->completed_at ? \Carbon\Carbon::parse($cp->completed_at)->translatedFormat('F Y') : 'Baru saja selesai' }}
                                 </p>
                             </div>
-                            <div class="text-xs text-amber-400 flex items-center gap-0.5">
-                                @if($cp->rating)
-                                    @for($i = 1; $i <= 5; $i++)
-                                        <i class="fa-solid fa-star {{ $i <= $cp->rating ? 'text-amber-400' : 'text-gray-200' }}"></i>
-                                    @endfor
-                                @else
-                                    <span class="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Belum Dinilai</span>
-                                @endif
+                            <div class="flex items-center gap-2">
+                                <div class="text-xs text-amber-400 flex items-center gap-0.5">
+                                    @if($cp->rating)
+                                        @for($i = 1; $i <= 5; $i++)
+                                            <i class="fa-solid fa-star {{ $i <= $cp->rating ? 'text-amber-400' : 'text-gray-200' }}"></i>
+                                        @endfor
+                                    @else
+                                        <span class="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Belum Dinilai</span>
+                                    @endif
+                                </div>
+                                <i class="fa-solid fa-chevron-right text-gray-300 text-[10px]"></i>
                             </div>
-                        </div>
+                        </a>
                     @empty
                         <div class="text-center py-6 text-gray-400 text-xs">
                             <p>Belum ada proyek yang selesai.</p>
                         </div>
                     @endforelse
+
                 </div>
+                @endif
 
             </div>
         </div>

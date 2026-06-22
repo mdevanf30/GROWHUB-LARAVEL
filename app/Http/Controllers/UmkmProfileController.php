@@ -13,12 +13,16 @@ class UmkmProfileController extends Controller
     {
         $user = Auth::user();
         $userId = $user->user_id;
-        $nama_user = $user->full_name;
+        $nama_user = $user->full_name ?? $user->name ?? 'User GrowHub';
         
         // AMBIL DATA & SIMPAN KE VARIABEL $cek_umkm
         $cek_umkm = DB::table('umkm')->where('user_id', $userId)->first();
+        $login_umkm = $cek_umkm;
+        $is_own_profile = true;
+        $profile_name = $nama_user;
+        $display_role = 'UMKM';
         
-        return view('profil', compact('cek_umkm', 'nama_user'));
+        return view('profil', compact('cek_umkm', 'nama_user', 'login_umkm', 'is_own_profile', 'profile_name', 'display_role'));
     }
 
     public function showRegisterForm()

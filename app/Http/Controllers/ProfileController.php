@@ -9,14 +9,15 @@ use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
-    public function index()
+    public function index($id = null)
     {
         if (!Auth::check()) {
             return redirect('/login')->with('error', 'Silakan login terlebih dahulu!');
         }
 
         $user = Auth::user();
-        $userId = $user->user_id ?? $user->id;
+        $is_own_profile = !$id || ($id == ($user->user_id ?? $user->id));
+        $userId = $is_own_profile ? ($user->user_id ?? $user->id) : $id;
         $nama_user = $user->full_name ?? $user->name ?? 'User GrowHub';
 
         // Ambil data UMKM jika ada
@@ -34,28 +35,68 @@ class ProfileController extends Controller
             $freelancer->email_address = $freelancer->email;
         }
 
+        $profile_name = $freelancer->full_name ?? $freelancer->name ?? 'User GrowHub';
+        $login_umkm = DB::table('umkm')->where('user_id', $user->user_id ?? $user->id)->first();
+
         // Ambil daftar proyek selesai dan ratingnya secara dinamis
         $completedProjects = [];
-        if (session('active_role') === 'UMKM' && $cek_umkm) {
-            $completedProjects = DB::table('project')
-                ->join('project_progress', 'project.project_id', '=', 'project_progress.project_id')
-                ->select('project.project_title', 'project_progress.completed_at', 'project_progress.rating_for_umkm as rating')
-                ->where('project.umkm_id', $cek_umkm->umkm_id)
-                ->where('project.status', 'completed')
-                ->get();
-        } else {
+        $totalCompletedCount = 0;
+        $display_role = $is_own_profile ? session('active_role') : 'Freelancer';
+
+        if ($display_role !== 'UMKM') {
             $completedProjects = DB::table('project_progress')
                 ->join('project', 'project_progress.project_id', '=', 'project.project_id')
-                ->select('project.project_title', 'project_progress.completed_at', 'project_progress.rating_for_freelancer as rating')
+                ->select('project.project_title', 'project_progress.completed_at', 'project_progress.rating_for_freelancer as rating', 'project.project_id')
                 ->where('project_progress.freelancer_id', $userId)
                 ->whereNotNull('project_progress.completed_at')
+                ->where('project_progress.payment_status', 'approved')
+                ->orderBy('project_progress.completed_at', 'desc')
+                ->take(3)
                 ->get();
+
+            $totalCompletedCount = DB::table('project_progress')
+                ->where('freelancer_id', $userId)
+                ->whereNotNull('completed_at')
+                ->where('payment_status', 'approved')
+                ->count();
         }
+
+        $projectCount = $totalCompletedCount;
+
+        // Tampilkan view profil dengan data lengkap (UMKM + Freelancer)
+        return view('profil', compact('nama_user', 'cek_umkm', 'freelancer', 'completedProjects', 'projectCount', 'totalCompletedCount', 'is_own_profile', 'display_role', 'profile_name', 'login_umkm'));
+    }
+
+    /**
+     * Tampilkan seluruh riwayat proyek freelancer yang sudah selesai dan disetujui pembayarannya
+     */
+    public function completedProjects($id = null)
+    {
+        if (!Auth::check()) {
+            return redirect('/login')->with('error', 'Silakan login terlebih dahulu!');
+        }
+
+        $user = Auth::user();
+        $is_own_profile = !$id || ($id == ($user->user_id ?? $user->id));
+        $userId = $is_own_profile ? ($user->user_id ?? $user->id) : $id;
+        
+        $targetUser = DB::table('users')->where('user_id', $userId)->first() ?? $user;
+        $nama_user = $targetUser->full_name ?? $targetUser->name ?? 'User GrowHub';
+        $login_umkm = DB::table('umkm')->where('user_id', $user->user_id ?? $user->id)->first();
+
+        // Ambil semua proyek selesai, paid, and verified
+        $completedProjects = DB::table('project_progress')
+            ->join('project', 'project_progress.project_id', '=', 'project.project_id')
+            ->select('project.project_title', 'project_progress.completed_at', 'project_progress.rating_for_freelancer as rating', 'project.project_id')
+            ->where('project_progress.freelancer_id', $userId)
+            ->whereNotNull('project_progress.completed_at')
+            ->where('project_progress.payment_status', 'approved')
+            ->orderBy('project_progress.completed_at', 'desc')
+            ->get();
 
         $projectCount = count($completedProjects);
 
-        // Tampilkan view profil dengan data lengkap (UMKM + Freelancer)
-        return view('profil', compact('nama_user', 'cek_umkm', 'freelancer', 'completedProjects', 'projectCount'));
+        return view('completed_projects_list', compact('nama_user', 'completedProjects', 'projectCount', 'is_own_profile', 'login_umkm'));
     }
 
     public function edit()
